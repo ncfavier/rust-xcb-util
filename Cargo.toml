@@ -11,12 +11,12 @@ keywords    = ["x11", "xcb"]
 
 [dependencies]
 libc = "0.2"
-xcb  = "0.10"
+xcb  = "1.3"
 
 [features]
 static = []
 shm    = ["xcb/shm"]
-thread = ["xcb/thread"]
+thread = []
 
 icccm   = []
 ewmh    = []
@@ -24,7 +24,7 @@ image   = []
 cursor  = []
 keysyms = []
 misc    = ["icccm"]
-render  = []
+render  = ["xcb/render"]
 
 [package.metadata.docs.rs]
 all-features = true

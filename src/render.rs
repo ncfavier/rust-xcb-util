@@ -1,5 +1,4 @@
 use xcb;
-use xcb::ffi::*;
 use xcb::render::*;
 use ffi::render::*;
 
@@ -24,13 +23,13 @@ pub const PICT_STANDARD_A_4:     PictStandard = XCB_PICT_STANDARD_A_4;
 pub const PICT_STANDARD_A_1:     PictStandard = XCB_PICT_STANDARD_A_1;
 
 pub trait QueryPictFormatsReplyExt {
-    fn find_visual_format(&self, visual: xcb::Visualid) -> Option<Pictvisual>;
+    fn find_visual_format(&self, visual: xcb::x::Visualid) -> Option<Pictvisual>;
     fn find_format(&self, mask: Pictformat, formats: &[Pictforminfo]) -> Option<Pictforminfo>;
     fn find_standard_format(&self, format: PictStandard) -> Option<Pictforminfo>;
 }
 
 impl QueryPictFormatsReplyExt for QueryPictFormatsReply {
-    fn find_visual_format(&self, visual: xcb::Visualid) -> Option<Pictvisual> {
+    fn find_visual_format(&self, visual: xcb::x::Visualid) -> Option<Pictvisual> {
         let result = unsafe {
             xcb_render_util_find_visual_format(
                 self.ptr,
@@ -41,14 +40,12 @@ impl QueryPictFormatsReplyExt for QueryPictFormatsReply {
         if result.is_null() {
             None
         } else {
-            Some(Pictvisual {
-                base: unsafe { *result },
-            })
+            Some(result)
         }
     }
 
     fn find_format(&self, mask: Pictformat, formats: &[Pictforminfo]) -> Option<Pictforminfo> {
-        let formats: Vec<xcb::ffi::render::xcb_render_pictforminfo_t>  = formats
+        let formats: Vec<Pictforminfo>  = formats
             .into_iter()
             .map(|format| format.base)
             .collect();
@@ -65,9 +62,7 @@ impl QueryPictFormatsReplyExt for QueryPictFormatsReply {
         if result.is_null() {
             None
         } else {
-            Some(Pictforminfo {
-                base: unsafe { *result },
-            })
+            result
         }
     }
 
@@ -82,9 +77,7 @@ impl QueryPictFormatsReplyExt for QueryPictFormatsReply {
         if result.is_null() {
             None
         } else {
-            Some(Pictforminfo {
-                base: unsafe { *result },
-            })
+            Some(result)
         }
     }
 }

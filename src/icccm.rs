@@ -11,35 +11,19 @@ use util::utf8;
 
 macro_rules! property {
 	(checked $name:ident with $func:ident -> $conn:expr, $cookie:expr) => (unsafe {
-		$name(xcb::GetPropertyCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: true,
-		}, $func)
+		$name(xcb::x::GetPropertyCookie::from_sequence($cookie), $func)
 	});
 
 	(unchecked $name:ident with $func:ident -> $conn:expr, $cookie:expr) => (unsafe {
-		$name(xcb::GetPropertyCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: false,
-		}, $func)
+		$name(xcb::x::GetPropertyCookieUnchecked::from_sequence($cookie), $func)
 	});
 
 	(checked $name:ident -> $conn:expr, $cookie:expr) => (unsafe {
-		$name(xcb::GetPropertyCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: true,
-		})
+		$name(xcb::x::GetPropertyCookie::from_sequence($cookie))
 	});
 
 	(unchecked $name:ident -> $conn:expr, $cookie:expr) => (unsafe {
-		$name(xcb::GetPropertyCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: false,
-		})
+		$name(xcb::x::GetPropertyCookieUnchecked::from_sequence($cookie))
 	});
 }
 
@@ -52,8 +36,8 @@ define!(cookie GetTextPropertyCookie for xcb_icccm_get_text_property_reply_t => 
 define!(reply GetTextPropertyReply for xcb_icccm_get_text_property_reply_t with xcb_icccm_get_text_property_reply_wipe);
 
 impl GetTextPropertyReply {
-	pub fn encoding(&self) -> xcb::Atom {
-		self.0.encoding as xcb::Atom
+	pub fn encoding(&self) -> xcb::x::Atom {
+		self.0.encoding as xcb::x::Atom
 	}
 
 	pub fn name(&self) -> &str {
@@ -68,38 +52,38 @@ impl GetTextPropertyReply {
 	}
 }
 
-pub fn get_text_property(c: &xcb::Connection, window: xcb::Window, property: xcb::Atom) -> GetTextPropertyCookie {
+pub fn get_text_property(c: &xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom) -> GetTextPropertyCookie {
 	property!(checked GetTextPropertyCookie with xcb_icccm_get_text_property_reply -> c,
 		xcb_icccm_get_text_property(c.get_raw_conn(), window, property))
 }
 
-pub fn get_text_property_unchecked(c: &xcb::Connection, window: xcb::Window, property: xcb::Atom) -> GetTextPropertyCookie {
+pub fn get_text_property_unchecked(c: &xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom) -> GetTextPropertyCookie {
 	property!(unchecked GetTextPropertyCookie with xcb_icccm_get_text_property_reply -> c,
 		xcb_icccm_get_text_property_unchecked(c.get_raw_conn(), window, property))
 }
 
-pub fn set_wm_name<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, name: T) -> xcb::VoidCookie {
+pub fn set_wm_name<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(unchecked -> c,
-		xcb_icccm_set_wm_name(c.get_raw_conn(), window, xcb::ATOM_STRING, 8,
+		xcb_icccm_set_wm_name(c.get_raw_conn(), window, xcb::x::ATOM_STRING, 8,
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn set_wm_name_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, name: T) -> xcb::VoidCookie {
+pub fn set_wm_name_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(checked -> c,
-		xcb_icccm_set_wm_name_checked(c.get_raw_conn(), window, xcb::ATOM_STRING, 8,
+		xcb_icccm_set_wm_name_checked(c.get_raw_conn(), window, xcb::x::ATOM_STRING, 8,
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn get_wm_name(c: &xcb::Connection, window: xcb::Window) -> GetTextPropertyCookie {
+pub fn get_wm_name(c: &xcb::Connection, window: xcb::x::Window) -> GetTextPropertyCookie {
 	property!(checked GetTextPropertyCookie with xcb_icccm_get_wm_name_reply -> c,
 		xcb_icccm_get_wm_name(c.get_raw_conn(), window))
 }
 
-pub fn set_wm_icon_name<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, encoding: xcb::Atom, format: u8, name: T) -> xcb::VoidCookie {
+pub fn set_wm_icon_name<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, encoding: xcb::x::Atom, format: u8, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(unchecked -> c,
@@ -107,7 +91,7 @@ pub fn set_wm_icon_name<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window,
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn set_wm_icon_name_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, encoding: xcb::Atom, format: u8, name: T) -> xcb::VoidCookie {
+pub fn set_wm_icon_name_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, encoding: xcb::x::Atom, format: u8, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(checked -> c,
@@ -115,12 +99,12 @@ pub fn set_wm_icon_name_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb:
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn get_wm_icon_name(c: &xcb::Connection, window: xcb::Window) -> GetTextPropertyCookie {
+pub fn get_wm_icon_name(c: &xcb::Connection, window: xcb::x::Window) -> GetTextPropertyCookie {
 	property!(checked GetTextPropertyCookie with xcb_icccm_get_wm_icon_name_reply -> c,
 		xcb_icccm_get_wm_icon_name(c.get_raw_conn(), window))
 }
 
-pub fn get_wm_icon_name_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetTextPropertyCookie {
+pub fn get_wm_icon_name_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetTextPropertyCookie {
 	property!(unchecked GetTextPropertyCookie with xcb_icccm_get_wm_icon_name_reply -> c,
 		xcb_icccm_get_wm_icon_name_unchecked(c.get_raw_conn(), window))
 }
@@ -129,36 +113,36 @@ define!(cookie GetWmColormapWindowsCookie with xcb_icccm_get_wm_colormap_windows
 define!(reply GetWmColormapWindowsReply for xcb_icccm_get_wm_colormap_windows_reply_t with xcb_icccm_get_wm_colormap_windows_reply_wipe);
 
 impl GetWmColormapWindowsReply {
-	pub fn windows(&self) -> &[xcb::Window] {
+	pub fn windows(&self) -> &[xcb::x::Window] {
 		unsafe {
 			slice::from_raw_parts(self.0.windows as *mut _, self.0.windows_len as usize)
 		}
 	}
 }
 
-pub fn set_wm_colormap_windows<'a>(c: &'a xcb::Connection, window: xcb::Window, colormap_windows: xcb::Atom, list: &[xcb::Window]) -> xcb::VoidCookie<'a> {
+pub fn set_wm_colormap_windows<'a>(c: &'a xcb::Connection, window: xcb::x::Window, colormap_windows: xcb::x::Atom, list: &[xcb::x::Window]) -> xcb::VoidCookie {
 	void!(unchecked -> c,
 		xcb_icccm_set_wm_colormap_windows(c.get_raw_conn(), window, colormap_windows,
 			list.len() as u32, list.as_ptr() as *const _))
 }
 
-pub fn set_wm_colormap_windows_checked<'a>(c: &'a xcb::Connection, window: xcb::Window, colormap_windows: xcb::Atom, list: &[xcb::Window]) -> xcb::VoidCookie<'a> {
+pub fn set_wm_colormap_windows_checked<'a>(c: &'a xcb::Connection, window: xcb::x::Window, colormap_windows: xcb::x::Atom, list: &[xcb::x::Window]) -> xcb::VoidCookie {
 	void!(checked -> c,
 		xcb_icccm_set_wm_colormap_windows_checked(c.get_raw_conn(), window, colormap_windows,
 			list.len() as u32, list.as_ptr() as *const _))
 }
 
-pub fn get_wm_colormap_windows(c: &xcb::Connection, window: xcb::Window, colormap_windows: xcb::Atom) -> GetWmColormapWindowsCookie {
+pub fn get_wm_colormap_windows(c: &xcb::Connection, window: xcb::x::Window, colormap_windows: xcb::x::Atom) -> GetWmColormapWindowsCookie {
 	property!(checked GetWmColormapWindowsCookie -> c,
 		xcb_icccm_get_wm_colormap_windows(c.get_raw_conn(), window, colormap_windows))
 }
 
-pub fn get_wm_colormap_windows_unchecked(c: &xcb::Connection, window: xcb::Window, colormap_windows: xcb::Atom) -> GetWmColormapWindowsCookie {
+pub fn get_wm_colormap_windows_unchecked(c: &xcb::Connection, window: xcb::x::Window, colormap_windows: xcb::x::Atom) -> GetWmColormapWindowsCookie {
 	property!(unchecked GetWmColormapWindowsCookie -> c,
 		xcb_icccm_get_wm_colormap_windows_unchecked(c.get_raw_conn(), window, colormap_windows))
 }
 
-pub fn set_wm_client_machine<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, encoding: xcb::Atom, format: u8, name: T) -> xcb::VoidCookie {
+pub fn set_wm_client_machine<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, encoding: xcb::x::Atom, format: u8, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(unchecked -> c,
@@ -166,7 +150,7 @@ pub fn set_wm_client_machine<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Wi
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn set_wm_client_machine_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, encoding: xcb::Atom, format: u8, name: T) -> xcb::VoidCookie {
+pub fn set_wm_client_machine_checked<T: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, encoding: xcb::x::Atom, format: u8, name: T) -> xcb::VoidCookie {
 	let name = name.as_ref();
 
 	void!(checked -> c,
@@ -174,12 +158,12 @@ pub fn set_wm_client_machine_checked<T: AsRef<str>>(c: &xcb::Connection, window:
 			name.len() as u32, name.as_bytes().as_ptr() as *const _))
 }
 
-pub fn get_wm_client_machine(c: &xcb::Connection, window: xcb::Window) -> GetTextPropertyCookie {
+pub fn get_wm_client_machine(c: &xcb::Connection, window: xcb::x::Window) -> GetTextPropertyCookie {
 	property!(checked GetTextPropertyCookie with xcb_icccm_get_wm_client_machine_reply -> c,
 		xcb_icccm_get_wm_client_machine(c.get_raw_conn(), window))
 }
 
-pub fn get_wm_client_machine_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetTextPropertyCookie {
+pub fn get_wm_client_machine_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetTextPropertyCookie {
 	property!(unchecked GetTextPropertyCookie with xcb_icccm_get_wm_client_machine_reply -> c,
 		xcb_icccm_get_wm_client_machine_unchecked(c.get_raw_conn(), window))
 }
@@ -201,7 +185,7 @@ impl GetWmClassReply {
 	}
 }
 
-pub fn set_wm_class<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, class: A, instance: B) -> xcb::VoidCookie {
+pub fn set_wm_class<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, class: A, instance: B) -> xcb::VoidCookie {
 	let value = utf8::from(vec![instance.as_ref(), class.as_ref()]);
 
 	void!(unchecked -> c,
@@ -209,7 +193,7 @@ pub fn set_wm_class<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, window: x
 			value.len() as u32, value.as_ptr() as *const _))
 }
 
-pub fn set_wm_class_checked<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, window: xcb::Window, class: A, instance: B) -> xcb::VoidCookie {
+pub fn set_wm_class_checked<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, window: xcb::x::Window, class: A, instance: B) -> xcb::VoidCookie {
 	let value = utf8::from(vec![class.as_ref(), instance.as_ref()]);
 
 	void!(checked -> c,
@@ -217,12 +201,12 @@ pub fn set_wm_class_checked<A: AsRef<str>, B: AsRef<str>>(c: &xcb::Connection, w
 			value.len() as u32, value.as_ptr() as *const _))
 }
 
-pub fn get_wm_class(c: &xcb::Connection, window: xcb::Window) -> GetWmClassCookie {
+pub fn get_wm_class(c: &xcb::Connection, window: xcb::x::Window) -> GetWmClassCookie {
 	property!(checked GetWmClassCookie -> c,
 		xcb_icccm_get_wm_class(c.get_raw_conn(), window))
 }
 
-pub fn get_wm_class_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetWmClassCookie {
+pub fn get_wm_class_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetWmClassCookie {
 	property!(unchecked GetWmClassCookie -> c,
 		xcb_icccm_get_wm_class_unchecked(c.get_raw_conn(), window))
 }
@@ -300,9 +284,9 @@ impl SizeHints {
 		}
 	}
 
-	pub fn gravity(&self) -> Option<xcb::Gravity> {
+	pub fn gravity(&self) -> Option<xcb::x::Gravity> {
 		if self.0.flags & XCB_ICCCM_SIZE_HINT_P_WIN_GRAVITY == 1 {
-			Some(self.0.win_gravity as xcb::Gravity)
+			Some(self.0.win_gravity as xcb::x::Gravity)
 		}
 		else {
 			None
@@ -367,7 +351,7 @@ impl SizeHintsBuilder {
 		self
 	}
 
-	pub fn gravity(mut self, gravity: xcb::Gravity) -> Self {
+	pub fn gravity(mut self, gravity: xcb::x::Gravity) -> Self {
 		unsafe {
 			xcb_icccm_size_hints_set_win_gravity(&mut self.0, gravity)
 		}
@@ -382,42 +366,42 @@ impl SizeHintsBuilder {
 
 define!(cookie GetWmSizeHintsCookie with xcb_icccm_get_wm_size_hints_reply => SizeHints);
 
-pub fn set_wm_size_hints<'a>(c: &'a xcb::Connection, window: xcb::Window, property: xcb::Atom, hints: &SizeHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_size_hints<'a>(c: &'a xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom, hints: &SizeHints) -> xcb::VoidCookie {
 	void!(unchecked -> c,
 		xcb_icccm_set_wm_size_hints(c.get_raw_conn(), window, property, &hints.0))
 }
 
-pub fn set_wm_size_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::Window, property: xcb::Atom, hints: &SizeHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_size_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom, hints: &SizeHints) -> xcb::VoidCookie {
 	void!(checked -> c,
 		xcb_icccm_set_wm_size_hints_checked(c.get_raw_conn(), window, property, &hints.0))
 }
 
-pub fn get_wm_size_hints(c: &xcb::Connection, window: xcb::Window, property: xcb::Atom) -> GetWmSizeHintsCookie {
+pub fn get_wm_size_hints(c: &xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom) -> GetWmSizeHintsCookie {
 	property!(checked GetWmSizeHintsCookie -> c,
 		xcb_icccm_get_wm_size_hints(c.get_raw_conn(), window, property))
 }
 
-pub fn get_wm_size_hints_unchecked(c: &xcb::Connection, window: xcb::Window, property: xcb::Atom) -> GetWmSizeHintsCookie {
+pub fn get_wm_size_hints_unchecked(c: &xcb::Connection, window: xcb::x::Window, property: xcb::x::Atom) -> GetWmSizeHintsCookie {
 	property!(unchecked GetWmSizeHintsCookie -> c,
 		xcb_icccm_get_wm_size_hints_unchecked(c.get_raw_conn(), window, property))
 }
 
-pub fn set_wm_normal_hints<'a>(c: &'a xcb::Connection, window: xcb::Window, hints: &SizeHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_normal_hints<'a>(c: &'a xcb::Connection, window: xcb::x::Window, hints: &SizeHints) -> xcb::VoidCookie {
 	void!(unchecked -> c,
 		xcb_icccm_set_wm_normal_hints(c.get_raw_conn(), window, &hints.0))
 }
 
-pub fn set_wm_normal_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::Window, hints: &SizeHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_normal_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::x::Window, hints: &SizeHints) -> xcb::VoidCookie {
 	void!(checked -> c,
 		xcb_icccm_set_wm_normal_hints_checked(c.get_raw_conn(), window, &hints.0))
 }
 
-pub fn get_wm_normal_hints(c: &xcb::Connection, window: xcb::Window) -> GetWmSizeHintsCookie {
+pub fn get_wm_normal_hints(c: &xcb::Connection, window: xcb::x::Window) -> GetWmSizeHintsCookie {
 	property!(checked GetWmSizeHintsCookie -> c,
 		xcb_icccm_get_wm_normal_hints(c.get_raw_conn(), window))
 }
 
-pub fn get_wm_normal_hints_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetWmSizeHintsCookie {
+pub fn get_wm_normal_hints_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetWmSizeHintsCookie {
 	property!(unchecked GetWmSizeHintsCookie -> c,
 		xcb_icccm_get_wm_normal_hints_unchecked(c.get_raw_conn(), window))
 }
@@ -463,36 +447,36 @@ impl WmHints {
 			self.0.initial_state != XCB_ICCCM_WM_STATE_WITHDRAWN)
 	}
 
-	pub fn icon_pixmap(&self) -> Option<xcb::Pixmap> {
+	pub fn icon_pixmap(&self) -> Option<xcb::x::Pixmap> {
 		if self.0.flags & XCB_ICCCM_WM_HINT_ICON_PIXMAP == 1 {
-			Some(self.0.icon_pixmap as xcb::Pixmap)
+			Some(self.0.icon_pixmap as xcb::x::Pixmap)
 		}
 		else {
 			None
 		}
 	}
 
-	pub fn icon_mask(&self) -> Option<xcb::Pixmap> {
+	pub fn icon_mask(&self) -> Option<xcb::x::Pixmap> {
 		if self.0.flags & XCB_ICCCM_WM_HINT_ICON_MASK == 1 {
-			Some(self.0.icon_mask as xcb::Pixmap)
+			Some(self.0.icon_mask as xcb::x::Pixmap)
 		}
 		else {
 			None
 		}
 	}
 
-	pub fn icon_window(&self) -> Option<xcb::Window> {
+	pub fn icon_window(&self) -> Option<xcb::x::Window> {
 		if self.0.flags & XCB_ICCCM_WM_HINT_ICON_WINDOW == 1 {
-			Some(self.0.icon_window as xcb::Window)
+			Some(self.0.icon_window as xcb::x::Window)
 		}
 		else {
 			None
 		}
 	}
 
-	pub fn window_group(&self) -> Option<xcb::Window> {
+	pub fn window_group(&self) -> Option<xcb::x::Window> {
 		if self.0.flags & XCB_ICCCM_WM_HINT_WINDOW_GROUP == 1 {
-			Some(self.0.window_group as xcb::Window)
+			Some(self.0.window_group as xcb::x::Window)
 		}
 		else {
 			None
@@ -552,7 +536,7 @@ impl WmHintsBuilder {
 		self
 	}
 
-	pub fn icon_pixmap(mut self, icon: xcb::Pixmap) -> Self {
+	pub fn icon_pixmap(mut self, icon: xcb::x::Pixmap) -> Self {
 		unsafe {
 			xcb_icccm_wm_hints_set_icon_pixmap(&mut self.0, icon);
 		}
@@ -560,7 +544,7 @@ impl WmHintsBuilder {
 		self
 	}
 
-	pub fn icon_mask(mut self, icon: xcb::Pixmap) -> Self {
+	pub fn icon_mask(mut self, icon: xcb::x::Pixmap) -> Self {
 		unsafe {
 			xcb_icccm_wm_hints_set_icon_mask(&mut self.0, icon);
 		}
@@ -568,7 +552,7 @@ impl WmHintsBuilder {
 		self
 	}
 
-	pub fn icon_window(mut self, icon: xcb::Window) -> Self {
+	pub fn icon_window(mut self, icon: xcb::x::Window) -> Self {
 		unsafe {
 			xcb_icccm_wm_hints_set_icon_window(&mut self.0, icon);
 		}
@@ -576,7 +560,7 @@ impl WmHintsBuilder {
 		self
 	}
 
-	pub fn window_group(mut self, group: xcb::Window) -> Self {
+	pub fn window_group(mut self, group: xcb::x::Window) -> Self {
 		unsafe {
 			xcb_icccm_wm_hints_set_window_group(&mut self.0, group);
 		}
@@ -599,22 +583,22 @@ impl WmHintsBuilder {
 
 define!(cookie GetWmHintsCookie with xcb_icccm_get_wm_hints_reply => WmHints);
 
-pub fn set_wm_hints<'a>(c: &'a xcb::Connection, window: xcb::Window, hints: &WmHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_hints<'a>(c: &'a xcb::Connection, window: xcb::x::Window, hints: &WmHints) -> xcb::VoidCookie {
 	void!(unchecked -> c,
 		xcb_icccm_set_wm_hints(c.get_raw_conn(), window, &hints.0))
 }
 
-pub fn set_wm_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::Window, hints: &WmHints) -> xcb::VoidCookie<'a> {
+pub fn set_wm_hints_checked<'a>(c: &'a xcb::Connection, window: xcb::x::Window, hints: &WmHints) -> xcb::VoidCookie {
 	void!(checked -> c,
 		xcb_icccm_set_wm_hints_checked(c.get_raw_conn(), window, &hints.0))
 }
 
-pub fn get_wm_hints(c: &xcb::Connection, window: xcb::Window) -> GetWmHintsCookie {
+pub fn get_wm_hints(c: &xcb::Connection, window: xcb::x::Window) -> GetWmHintsCookie {
 	property!(checked GetWmHintsCookie -> c,
 		xcb_icccm_get_wm_hints(c.get_raw_conn(), window))
 }
 
-pub fn get_wm_hints_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetWmHintsCookie {
+pub fn get_wm_hints_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetWmHintsCookie {
 	property!(unchecked GetWmHintsCookie -> c,
 		xcb_icccm_get_wm_hints_unchecked(c.get_raw_conn(), window))
 }
@@ -623,44 +607,44 @@ define!(cookie GetWmProtocolsCookie with xcb_icccm_get_wm_protocols_reply => Get
 define!(reply GetWmProtocolsReply for xcb_icccm_get_wm_protocols_reply_t with xcb_icccm_get_wm_protocols_reply_wipe);
 
 impl GetWmProtocolsReply {
-	pub fn atoms(&self) -> &[xcb::Atom] {
+	pub fn atoms(&self) -> &[xcb::x::Atom] {
 		unsafe {
-			slice::from_raw_parts(self.0.atoms as *mut xcb::Atom, self.0.atoms_len as usize)
+			slice::from_raw_parts(self.0.atoms as *mut xcb::x::Atom, self.0.atoms_len as usize)
 		}
 	}
 }
 
-pub fn set_wm_protocols<'a>(c: &'a xcb::Connection, window: xcb::Window, protocols: xcb::Atom, list: &[xcb::Window]) -> xcb::VoidCookie<'a> {
+pub fn set_wm_protocols<'a>(c: &'a xcb::Connection, window: xcb::x::Window, protocols: xcb::x::Atom, list: &[xcb::x::Window]) -> xcb::VoidCookie {
 	void!(unchecked -> c,
 		xcb_icccm_set_wm_protocols(c.get_raw_conn(), window, protocols,
 			list.len() as u32, list.as_ptr() as *const _))
 }
 
-pub fn set_wm_protocols_checked<'a>(c: &'a xcb::Connection, window: xcb::Window, protocols: xcb::Atom, list: &[xcb::Window]) -> xcb::VoidCookie<'a> {
+pub fn set_wm_protocols_checked<'a>(c: &'a xcb::Connection, window: xcb::x::Window, protocols: xcb::x::Atom, list: &[xcb::x::Window]) -> xcb::VoidCookie {
 	void!(checked -> c,
 		xcb_icccm_set_wm_protocols_checked(c.get_raw_conn(), window, protocols,
 			list.len() as u32, list.as_ptr() as *const _))
 }
 
-pub fn get_wm_protocols(c: &xcb::Connection, window: xcb::Window, protocols: xcb::Atom) -> GetWmProtocolsCookie {
+pub fn get_wm_protocols(c: &xcb::Connection, window: xcb::x::Window, protocols: xcb::x::Atom) -> GetWmProtocolsCookie {
 	property!(checked GetWmProtocolsCookie -> c,
 		xcb_icccm_get_wm_protocols(c.get_raw_conn(), window, protocols))
 }
 
-pub fn get_wm_protocols_unchecked(c: &xcb::Connection, window: xcb::Window, protocols: xcb::Atom) -> GetWmProtocolsCookie {
+pub fn get_wm_protocols_unchecked(c: &xcb::Connection, window: xcb::x::Window, protocols: xcb::x::Atom) -> GetWmProtocolsCookie {
 	property!(unchecked GetWmProtocolsCookie -> c,
 		xcb_icccm_get_wm_protocols_unchecked(c.get_raw_conn(), window, protocols))
 }
 
-pub struct GetWmStateCookie<'a>(xcb::GetPropertyCookie<'a>);
-pub struct GetWmStateReply(xcb::GetPropertyReply);
+pub struct GetWmStateCookie<'a>(xcb::x::GetPropertyCookie);
+pub struct GetWmStateReply(xcb::x::GetPropertyReply);
 
 impl<'a> GetWmStateCookie<'a> {
-	pub fn get_reply(self) -> Result<GetWmStateReply, xcb::ReplyError> {
+	pub fn get_reply(self) -> xcb::Result<GetWmStateReply> {
 		let reply = self.0.get_reply()?;
-		
-		if reply.type_() == xcb::ATOM_NONE {
-			Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: ptr::null_mut() }))
+
+		if reply.type_() == xcb::x::ATOM_NONE {
+			Err(xcb::Error::Procotol(xcb::ProtocolError::X(xcb::GenericError { ptr: ptr::null_mut() })))
 		}
 		else {
 			Ok(GetWmStateReply(reply))
@@ -673,27 +657,27 @@ impl GetWmStateReply {
 		self.0.value()[0]
 	}
 
-	pub fn icon(&self) -> xcb::Window {
+	pub fn icon(&self) -> xcb::x::Window {
 		self.0.value()[1]
 	}
 }
 
-pub fn set_wm_state(c: &xcb::Connection, window: xcb::Window, state: WmState, icon: xcb::Window) -> xcb::VoidCookie {
+pub fn set_wm_state(c: &xcb::Connection, window: xcb::x::Window, state: WmState, icon: xcb::x::Window) -> xcb::VoidCookie {
 	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
 	xcb::change_property(c, xcb::CHANGE_PROPERTY as u8, window, atom, atom, 32, &[state as i32, icon as i32])
 }
 
-pub fn set_wm_state_checked(c: &xcb::Connection, window: xcb::Window, state: WmState, icon: xcb::Window) -> xcb::VoidCookie {
+pub fn set_wm_state_checked(c: &xcb::Connection, window: xcb::x::Window, state: WmState, icon: xcb::x::Window) -> xcb::VoidCookie {
 	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
 	xcb::change_property_checked(c, xcb::CHANGE_PROPERTY as u8, window, atom, atom, 32, &[state as i32, icon as i32])
 }
 
-pub fn get_wm_state(c: &xcb::Connection, window: xcb::Window) -> GetWmStateCookie {
+pub fn get_wm_state(c: &xcb::Connection, window: xcb::x::Window) -> GetWmStateCookie {
 	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
 	GetWmStateCookie(xcb::get_property(c, false, window, atom, atom, 0, 2))
 }
 
-pub fn get_wm_state_unchecked(c: &xcb::Connection, window: xcb::Window) -> GetWmStateCookie {
+pub fn get_wm_state_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetWmStateCookie {
 	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
 	GetWmStateCookie(xcb::get_property_unchecked(c, false, window, atom, atom, 0, 2))
 }

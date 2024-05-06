@@ -1,9 +1,9 @@
 use xcb;
 use icccm;
 
-pub fn client_window(c: &xcb::Connection, window: xcb::Window) -> Option<xcb::Window> {
-	fn try_children(c: &xcb::Connection, window: xcb::Window) -> Option<xcb::Window> {
-		if let Ok(query) = xcb::query_tree(c, window).get_reply() {
+pub fn client_window(c: &xcb::Connection, window: xcb::x::Window) -> Option<xcb::x::Window> {
+	fn try_children(c: &xcb::Connection, window: xcb::x::Window) -> Option<xcb::x::Window> {
+		if let Ok(query) = c.wait_for_reply(c.send_request(&xcb::x::QueryTree{window})) {
 			for &child in query.children() {
 				if icccm::get_wm_state(c, child).get_reply().is_ok() {
 					return Some(child);

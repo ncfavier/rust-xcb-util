@@ -1,7 +1,7 @@
 macro_rules! define {
 	(cookie $cookie:ident for $inner:ident => $reply:ident) => (
-		pub struct $cookie<'a>(xcb::GetPropertyCookie<'a>,
-			unsafe extern "C" fn(*mut xcb_connection_t, xcb_get_property_cookie_t, *mut $inner, *mut *mut xcb_generic_error_t) -> u8);
+		pub struct $cookie<'a>(xcb::x::GetPropertyCookie,
+			unsafe extern "C" fn(*mut xcb_connection_t, xcb::x::GetPropertyCookie, *mut $inner, *mut *mut xcb_generic_error_t) -> u8);
 
 		#[cfg(feature = "thread")]
 		unsafe impl<'a> Send for $cookie<'a> { }
@@ -35,7 +35,7 @@ macro_rules! define {
 	);
 
 	(cookie $cookie:ident with $func:ident => $reply:ident) => (
-		pub struct $cookie<'a>(xcb::GetPropertyCookie<'a>);
+		pub struct $cookie<'a>(xcb::x::GetPropertyCookie);
 
 		#[cfg(feature = "thread")]
 		unsafe impl<'a> Send for $cookie<'a> { }
@@ -71,7 +71,7 @@ macro_rules! define {
 	(cookie $cookie:ident through $conn:ident with $func:ident => $reply:ident) => (
 		pub struct $cookie<'a> {
 			conn:    &'a $conn,
-			cookie:  xcb_get_property_cookie_t,
+			cookie:  xcb::x::GetPropertyCookie,
 			checked: bool,
 		}
 
@@ -109,7 +109,7 @@ macro_rules! define {
 	(cookie $cookie:ident through $conn:ident with $func:ident as ($first:path, $second:path)) => (
 		pub struct $cookie<'a> {
 			conn:    &'a $conn,
-			cookie:  xcb_get_property_cookie_t,
+			cookie:  xcb::x::GetPropertyCookie,
 			checked: bool,
 		}
 
@@ -149,7 +149,7 @@ macro_rules! define {
 	(cookie $cookie:ident through $conn:ident with $func:ident as $reply:path) => (
 		pub struct $cookie<'a> {
 			conn:    &'a $conn,
-			cookie:  xcb_get_property_cookie_t,
+			cookie:  xcb::x::GetPropertyCookie,
 			checked: bool,
 		}
 
@@ -241,19 +241,11 @@ macro_rules! define {
 
 macro_rules! void {
 	(checked -> $conn:expr, $cookie:expr) => (unsafe {
-		xcb::VoidCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: true,
-		}
+		xcb::VoidCookieChecked::from_sequence($cookie)
 	});
 
 	(unchecked -> $conn:expr, $cookie:expr) => (unsafe {
-		xcb::VoidCookie {
-			cookie:  $cookie,
-			conn:    $conn,
-			checked: true,
-		}
+		xcb::VoidCookie::from_sequence($cookie)
 	});
 }
 

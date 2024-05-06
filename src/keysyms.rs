@@ -17,13 +17,13 @@ impl<'a> KeySymbols<'a> {
 		}
 	}
 
-	pub fn get_keysym(&self, keycode: xcb::Keycode, col: i32) -> xcb::Keysym {
+	pub fn get_keysym(&self, keycode: xcb::x::Keycode, col: i32) -> xcb::x::Keysym {
 		unsafe {
 			xcb_key_symbols_get_keysym(self.ptr, keycode, col)
 		}
 	}
 
-	pub fn get_keycode(&self, keysym: xcb::Keysym) -> KeycodeIter {
+	pub fn get_keycode(&self, keysym: xcb::x::Keysym) -> KeycodeIter {
 		unsafe {
 			KeycodeIter {
 				ptr:   xcb_key_symbols_get_keycode(self.ptr, keysym),
@@ -32,19 +32,19 @@ impl<'a> KeySymbols<'a> {
 		}
 	}
 
-	pub fn press_lookup_keysym(&self, event: &xcb::KeyPressEvent, col: i32) -> xcb::Keysym {
+	pub fn press_lookup_keysym(&self, event: &xcb::x::KeyPressEvent, col: i32) -> xcb::x::Keysym {
 		unsafe {
 			xcb_key_press_lookup_keysym(self.ptr, event.ptr, col)
 		}
 	}
 
-	pub fn release_lookup_keysym(&self, event: &xcb::KeyReleaseEvent, col: i32) -> xcb::Keysym {
+	pub fn release_lookup_keysym(&self, event: &xcb::x::KeyReleaseEvent, col: i32) -> xcb::x::Keysym {
 		unsafe {
 			xcb_key_release_lookup_keysym(self.ptr, event.ptr, col)
 		}
 	}
 
-	pub fn refresh_keyboard_mapping(&self, event: &xcb::MappingNotifyEvent) -> i32 {
+	pub fn refresh_keyboard_mapping(&self, event: &xcb::x::MappingNotifyEvent) -> i32 {
 		unsafe {
 			xcb_refresh_keyboard_mapping(self.ptr, event.ptr)
 		}
@@ -60,7 +60,7 @@ impl<'a> Drop for KeySymbols<'a> {
 }
 
 pub struct KeycodeIter {
-	ptr: *mut xcb::Keycode,
+	ptr: *mut xcb::x::Keycode,
 	index: isize,
 }
 
@@ -73,9 +73,9 @@ impl Drop for KeycodeIter {
 }
 
 impl Iterator for KeycodeIter {
-	type Item = xcb::Keycode;
+	type Item = xcb::x::Keycode;
 
-	fn next(&mut self) -> Option<xcb::Keycode> {
+	fn next(&mut self) -> Option<xcb::x::Keycode> {
 		unsafe {
 			if self.ptr.is_null() {
 				return None;
@@ -94,43 +94,43 @@ impl Iterator for KeycodeIter {
 	}
 }
 
-pub fn is_keypad_key(keysym: xcb::Keysym) -> bool {
+pub fn is_keypad_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_keypad_key(keysym) != 0
 	}
 }
 
-pub fn is_private_keypad_key(keysym: xcb::Keysym) -> bool {
+pub fn is_private_keypad_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_private_keypad_key(keysym) != 0
 	}
 }
 
-pub fn is_cursor_key(keysym: xcb::Keysym) -> bool {
+pub fn is_cursor_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_cursor_key(keysym) != 0
 	}
 }
 
-pub fn is_pf_key(keysym: xcb::Keysym) -> bool {
+pub fn is_pf_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_pf_key(keysym) != 0
 	}
 }
 
-pub fn is_function_key(keysym: xcb::Keysym) -> bool {
+pub fn is_function_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_function_key(keysym) != 0
 	}
 }
 
-pub fn is_misc_function_key(keysym: xcb::Keysym) -> bool {
+pub fn is_misc_function_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_misc_function_key(keysym) != 0
 	}
 }
 
-pub fn is_modifier_key(keysym: xcb::Keysym) -> bool {
+pub fn is_modifier_key(keysym: xcb::x::Keysym) -> bool {
 	unsafe {
 		xcb_is_modifier_key(keysym) != 0
 	}

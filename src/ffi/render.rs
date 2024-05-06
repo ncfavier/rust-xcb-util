@@ -1,5 +1,5 @@
 use xcb::ffi::*;
-use xcb::ffi::render::*;
+use xcb::render::*;
 
 pub type xcb_pict_format_t = u32;
 pub const XCB_PICT_FORMAT_ID:         xcb_pict_format_t = 1 << 0;
@@ -29,34 +29,34 @@ pub struct xcb_render_util_composite_text_stream_t([u8; 0]);
 #[cfg_attr(not(feature = "static"), link(name = "xcb-render-util"))]
 extern "C" {
     pub fn xcb_render_util_find_visual_format(
-        formats: *const xcb_render_query_pict_formats_reply_t,
-        visual: xcb_visualid_t,
-    ) -> *mut xcb_render_pictvisual_t;
+        formats: *const QueryPictFormatsReply,
+        visual: xcb::x::Visualid,
+    ) -> *mut Pictvisual;
 
     pub fn xcb_render_util_find_format(
-        formats: *const xcb_render_query_pict_formats_reply_t,
+        formats: *const QueryPictFormatsReply,
         mask: u32,
-        ptemplate: *const xcb_render_pictforminfo_t,
+        ptemplate: *const Pictforminfo,
         count: i32,
-    ) -> *mut xcb_render_pictforminfo_t;
+    ) -> *mut Pictforminfo;
 
     pub fn xcb_render_util_find_standard_format(
-        formats: *const xcb_render_query_pict_formats_reply_t,
+        formats: *const QueryPictFormatsReply,
         format: xcb_pict_standard_t,
-    ) -> *mut xcb_render_pictforminfo_t;
+    ) -> *mut Pictforminfo;
 
     pub fn xcb_render_util_query_version(
         c: *mut xcb_connection_t,
-    ) -> *const xcb_render_query_version_reply_t;
+    ) -> *const QueryVersionReply;
     pub fn xcb_render_util_query_formats(
         c: *mut xcb_connection_t,
-    ) -> *const xcb_render_query_pict_formats_reply_t;
+    ) -> *const QueryPictFormatsReply;
     pub fn xcb_render_util_disconnect(
         c: *mut xcb_connection_t,
     ) -> i32;
 
     pub fn xcb_render_util_composite_text_stream(
-        initial_glyphset: xcb_render_glyphset_t,
+        initial_glyphset: Glyphset,
         total_glyphs: u32,
         total_glyphset_changes: u32,
     ) -> *mut xcb_render_util_composite_text_stream_t;
@@ -85,30 +85,30 @@ extern "C" {
 
     pub fn xcb_render_util_change_glyphset(
         stream: *mut xcb_render_util_composite_text_stream_t,
-        glyphset: xcb_render_glyphset_t,
+        glyphset: Glyphset,
     );
 
     pub fn xcb_render_util_composite_text(
         c: *mut xcb_connection_t,
         op: u8,
-        src: xcb_render_picture_t,
-        dst: xcb_render_picture_t,
-        mask_format: xcb_render_picture_t,
+        src: Picture,
+        dst: Picture,
+        mask_format: Picture,
         src_x: i16,
         src_y: i16,
         stream: *mut xcb_render_util_composite_text_stream_t,
-    ) -> xcb_void_cookie_t;
+    ) -> xcb::VoidCookie;
 
     pub fn xcb_render_util_composite_text_checked(
         c: *mut xcb_connection_t,
         op: u8,
-        src: xcb_render_picture_t,
-        dst: xcb_render_picture_t,
-        mask_format: xcb_render_picture_t,
+        src: Picture,
+        dst: Picture,
+        mask_format: Picture,
         src_x: i16,
         src_y: i16,
         stream: *mut xcb_render_util_composite_text_stream_t,
-    ) -> xcb_void_cookie_t;
+    ) -> xcb::VoidCookie;
 
     pub fn xcb_render_util_composite_text_free(
         stream: *mut xcb_render_util_composite_text_stream_t,
