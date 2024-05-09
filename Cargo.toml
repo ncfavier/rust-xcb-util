@@ -11,7 +11,7 @@ keywords    = ["x11", "xcb"]
 
 [dependencies]
 libc = "0.2"
-xcb  = "1.3"
+xcb  = "1.4"
 
 [features]
 static = []

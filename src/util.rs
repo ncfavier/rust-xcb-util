@@ -1,6 +1,6 @@
 macro_rules! define {
 	(cookie $cookie:ident for $inner:ident => $reply:ident) => (
-		pub struct $cookie<'a>(xcb::x::GetPropertyCookie,
+		pub struct $cookie(xcb::x::GetPropertyCookie,
 			unsafe extern "C" fn(*mut xcb_connection_t, xcb::x::GetPropertyCookie, *mut $inner, *mut *mut xcb_generic_error_t) -> u8);
 
 		#[cfg(feature = "thread")]
@@ -8,24 +8,24 @@ macro_rules! define {
 		#[cfg(feature = "thread")]
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
-		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<$reply, xcb::ReplyError> {
+		impl $cookie {
+			pub fn get_reply(&self) -> xcb::Result<$reply> {
 				unsafe {
 					if self.0.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut reply = mem::zeroed();
-						let     res = self.1(self.0.conn.get_raw_conn(), self.0.cookie, &mut reply, &mut err);
+						let     res = self.1(self.0.conn.get_raw_conn(), self.0, &mut reply, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok($reply(reply))
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut reply = mem::zeroed();
-						self.1(self.0.conn.get_raw_conn(), self.0.cookie, &mut reply, ptr::null_mut());
+						self.1(self.0.conn.get_raw_conn(), self.0, &mut reply, ptr::null_mut());
 
 						Ok($reply(reply))
 					}
@@ -35,31 +35,31 @@ macro_rules! define {
 	);
 
 	(cookie $cookie:ident with $func:ident => $reply:ident) => (
-		pub struct $cookie<'a>(xcb::x::GetPropertyCookie);
+		pub struct $cookie(xcb::x::GetPropertyCookie);
 
 		#[cfg(feature = "thread")]
 		unsafe impl<'a> Send for $cookie<'a> { }
 		#[cfg(feature = "thread")]
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
-		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<$reply, xcb::ReplyError> {
+		impl $cookie {
+			pub fn get_reply(&self) -> xcb::Result<$reply> {
 				unsafe {
 					if self.0.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut reply = mem::zeroed();
-						let     res = $func(self.0.conn.get_raw_conn(), self.0.cookie, &mut reply, &mut err);
+						let     res = $func(self.0.conn.get_raw_conn(), self.0, &mut reply, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok($reply(reply))
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut reply = mem::zeroed();
-						$func(self.0.conn.get_raw_conn(), self.0.cookie, &mut reply, ptr::null_mut());
+						$func(self.0.conn.get_raw_conn(), self.0, &mut reply, ptr::null_mut());
 
 						Ok($reply(reply))
 					}
@@ -81,23 +81,23 @@ macro_rules! define {
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
 		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<$reply, xcb::ReplyError> {
+			pub fn get_reply(&self) -> xcb::Result<$reply> {
 				unsafe {
 					if self.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut reply = mem::zeroed();
-						let     res = $func(self.conn.get_raw_conn(), self.cookie, &mut reply, &mut err);
+						let     res = $func(self.conn.get_raw_conn(), self, &mut reply, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok($reply(reply))
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut reply = mem::zeroed();
-						$func(self.conn.get_raw_conn(), self.cookie, &mut reply, ptr::null_mut());
+						$func(self.conn.get_raw_conn(), self, &mut reply, ptr::null_mut());
 
 						Ok($reply(reply))
 					}
@@ -119,25 +119,25 @@ macro_rules! define {
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
 		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<($first, $second), xcb::ReplyError> {
+			pub fn get_reply(&self) -> xcb::Result<($first, $second)> {
 				unsafe {
 					if self.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut first = mem::zeroed();
 						let mut second = mem::zeroed();
-						let     res = $func(self.conn.get_raw_conn(), self.cookie, &mut first, &mut second, &mut err);
+						let     res = $func(self.conn.get_raw_conn(), self, &mut first, &mut second, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok((first, second))
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut first = mem::zeroed();
 						let mut second = mem::zeroed();
-						$func(self.conn.get_raw_conn(), self.cookie, &mut first, &mut second, ptr::null_mut());
+						$func(self.conn.get_raw_conn(), self, &mut first, &mut second, ptr::null_mut());
 
 						Ok((first, second))
 					}
@@ -159,23 +159,23 @@ macro_rules! define {
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
 		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<$reply, xcb::ReplyError> {
+			pub fn get_reply(&self) -> xcb::Result<$reply> {
 				unsafe {
 					if self.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut reply = mem::zeroed();
-						let     res = $func(self.conn.get_raw_conn(), self.cookie, &mut reply, &mut err);
+						let     res = $func(self.conn.get_raw_conn(), self, &mut reply, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok(reply)
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut reply = mem::zeroed();
-						$func(self.conn.get_raw_conn(), self.cookie, &mut reply, ptr::null_mut());
+						$func(self.conn.get_raw_conn(), self, &mut reply, ptr::null_mut());
 
 						Ok(reply)
 					}
@@ -197,23 +197,23 @@ macro_rules! define {
 		unsafe impl<'a> Sync for $cookie<'a> { }
 
 		impl<'a> $cookie<'a> {
-			pub fn get_reply(&self) -> Result<$reply, xcb::ReplyError> {
+			pub fn get_reply(&self) -> xcb::Result<$reply> {
 				unsafe {
 					if self.checked {
 						let mut err: *mut xcb_generic_error_t = ptr::null_mut();
 						let mut reply = mem::zeroed();
-						let     res = $func(self.conn.get_raw_conn(), self.cookie, &mut reply, &mut err);
+						let     res = $func(self.conn.get_raw_conn(), self, &mut reply, &mut err);
 
 						if err.is_null() && res != 0 {
 							Ok(reply)
 						}
 						else {
-							Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
+							// Err(xcb::ReplyError::GenericError(xcb::GenericError { ptr: err }))
 						}
 					}
 					else {
 						let mut reply = mem::zeroed();
-						$func(self.conn.get_raw_conn(), self.cookie, &mut reply, ptr::null_mut());
+						$func(self.conn.get_raw_conn(), self, &mut reply, ptr::null_mut());
 
 						Ok(reply)
 					}

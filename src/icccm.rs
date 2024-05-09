@@ -636,10 +636,10 @@ pub fn get_wm_protocols_unchecked(c: &xcb::Connection, window: xcb::x::Window, p
 		xcb_icccm_get_wm_protocols_unchecked(c.get_raw_conn(), window, protocols))
 }
 
-pub struct GetWmStateCookie<'a>(xcb::x::GetPropertyCookie);
+pub struct GetWmStateCookie(xcb::x::GetPropertyCookie);
 pub struct GetWmStateReply(xcb::x::GetPropertyReply);
 
-impl<'a> GetWmStateCookie<'a> {
+impl GetWmStateCookie {
 	pub fn get_reply(self) -> xcb::Result<GetWmStateReply> {
 		let reply = self.0.get_reply()?;
 
