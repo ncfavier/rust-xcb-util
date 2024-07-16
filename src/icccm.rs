@@ -644,7 +644,7 @@ impl GetWmStateCookie {
 		let reply = self.0.get_reply()?;
 
 		if reply.type_() == xcb::x::ATOM_NONE {
-			Err(xcb::Error::Procotol(xcb::ProtocolError::X(xcb::GenericError { ptr: ptr::null_mut() })))
+			// Err(xcb::Error::Procotol(xcb::ProtocolError::X(xcb::GenericError { ptr: ptr::null_mut() })))
 		}
 		else {
 			Ok(GetWmStateReply(reply))
@@ -663,21 +663,47 @@ impl GetWmStateReply {
 }
 
 pub fn set_wm_state(c: &xcb::Connection, window: xcb::x::Window, state: WmState, icon: xcb::x::Window) -> xcb::VoidCookie {
-	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
-	xcb::change_property(c, xcb::CHANGE_PROPERTY as u8, window, atom, atom, 32, &[state as i32, icon as i32])
+	let atom = c.wait_for_reply(c.send_request(&xcb::x::InternAtom{only_if_exists: false, name: "WM_STATE"})).unwrap().atom();
+	c.send_request_unchecked(&xcb::x::ChangeProperty{
+		mode: xcb::x::PropMode::Replace,
+		window: window,
+		property: atom,
+		r#type: atom,
+		data: &[state as u32, icon as u32],
+	});
 }
 
 pub fn set_wm_state_checked(c: &xcb::Connection, window: xcb::x::Window, state: WmState, icon: xcb::x::Window) -> xcb::VoidCookie {
-	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
-	xcb::change_property_checked(c, xcb::CHANGE_PROPERTY as u8, window, atom, atom, 32, &[state as i32, icon as i32])
+	let atom = c.wait_for_reply(c.send_request(&xcb::x::InternAtom{only_if_exists: false, name: "WM_STATE"})).unwrap().atom();
+	c.send_request_checked(&xcb::x::ChangeProperty{
+		mode: xcb::x::PropMode::Replace,
+		window: window,
+		property: atom,
+		r#type: atom,
+		data: &[state as u32, icon as u32],
+	});
 }
 
 pub fn get_wm_state(c: &xcb::Connection, window: xcb::x::Window) -> GetWmStateCookie {
-	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
-	GetWmStateCookie(xcb::get_property(c, false, window, atom, atom, 0, 2))
+	let atom = c.wait_for_reply(c.send_request(&xcb::x::InternAtom{only_if_exists: false, name: "WM_STATE"})).unwrap().atom();
+	c.send_request(&xcb::x::GetProperty{
+		delete: false,
+		window: window,
+		property: atom,
+		r#type: atom,
+		long_offset: 0,
+		long_length: 2,
+	});
 }
 
 pub fn get_wm_state_unchecked(c: &xcb::Connection, window: xcb::x::Window) -> GetWmStateCookie {
-	let atom = xcb::intern_atom_unchecked(c, false, "WM_STATE").get_reply().unwrap().atom();
-	GetWmStateCookie(xcb::get_property_unchecked(c, false, window, atom, atom, 0, 2))
+	let atom = c.wait_for_reply(c.send_request(&xcb::x::InternAtom{only_if_exists: false, name: "WM_STATE"})).unwrap().atom();
+	c.send_request(&xcb::x::GetProperty{
+		delete: false,
+		window: window,
+		property: atom,
+		r#type: atom,
+		long_offset: 0,
+		long_length: 2,
+	});
 }

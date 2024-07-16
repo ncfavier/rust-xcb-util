@@ -4,9 +4,9 @@ macro_rules! define {
 			unsafe extern "C" fn(*mut xcb_connection_t, xcb::x::GetPropertyCookie, *mut $inner, *mut *mut xcb_generic_error_t) -> u8);
 
 		#[cfg(feature = "thread")]
-		unsafe impl<'a> Send for $cookie<'a> { }
+		unsafe impl Send for $cookie { }
 		#[cfg(feature = "thread")]
-		unsafe impl<'a> Sync for $cookie<'a> { }
+		unsafe impl Sync for $cookie { }
 
 		impl $cookie {
 			pub fn get_reply(&self) -> xcb::Result<$reply> {
@@ -38,9 +38,9 @@ macro_rules! define {
 		pub struct $cookie(xcb::x::GetPropertyCookie);
 
 		#[cfg(feature = "thread")]
-		unsafe impl<'a> Send for $cookie<'a> { }
+		unsafe impl Send for $cookie { }
 		#[cfg(feature = "thread")]
-		unsafe impl<'a> Sync for $cookie<'a> { }
+		unsafe impl Sync for $cookie { }
 
 		impl $cookie {
 			pub fn get_reply(&self) -> xcb::Result<$reply> {
